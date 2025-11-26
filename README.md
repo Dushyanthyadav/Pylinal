@@ -1,4 +1,4 @@
-# My Linear Algebra Module
+# Linear Algebra Module
 
 A implementation of linear algebra concepts in Python.
 
