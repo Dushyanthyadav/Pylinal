@@ -1,5 +1,3 @@
-from .vector import Vector
-
 class Matrix:
 
     __slots__ = ("mat", "m", "n")
@@ -20,10 +18,13 @@ class Matrix:
         col_len = len(matrix[0])
 
         clean_matrix = []
-        for row in matrix:
-            if len(row) != col_len:
-                raise ValueError("Matrix rows must have equal length.")
-            clean_matrix.append(tuple(row))
+        try:
+            for row in matrix:
+                if len(row) != col_len:
+                    raise ValueError("Matrix rows must have equal length.")
+                clean_matrix.append(tuple(float(x) for x in row))
+        except (TypeError, ValueError):
+            raise TypeError(f"All element should be int or float")
 
         self.mat = tuple(clean_matrix)
         self.m = len(matrix)
@@ -57,6 +58,12 @@ class Matrix:
         if (self.m, self.n) != (other.m, other.n):
             raise ValueError(f"({self.m}, {self.n}) vs ({other.m}, {other.n}) Dimension miss match")
         return other
+
+    def __eq__(self, other):
+        other = self._ensure_dim(self._ensure_matrix(other))
+        if (self.m, self.n) != (other.m, other.n):
+            return False
+        return all([row_a == row_b for row_a, row_b in zip(self, other)])
     
     def __add__(self, other):
         other = self._ensure_dim(self._ensure_matrix(other))
@@ -64,11 +71,55 @@ class Matrix:
 
     def __radd__(self, other):
         return self.__add__(other)
+
+    def __sub__(self, other):
+        other = self._ensure_dim(self._ensure_matrix(other))
+        return Matrix([[a-b for a,b in zip(self_row, other_row)] for self_row, other_row in zip(self.mat, other.mat)])     
+
+    def __rsub__(self, other):
+        other = self._ensure_dim(self._ensure_matrix(other))
+        return other.__sub__(self)
+
+    def __mul__(self, other):
+        if isinstance(other, (int,float)):
+            return Matrix([[i*other for i in row] for row in self])
+        other = self._ensure_dim(self._ensure_matrix(other))
+        return Matrix([[a*b for a, b in zip(row_A,row_b)] for row_A, row_b in zip(self, other)])
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __truediv__(self, other):
+        if not isinstance(other, (int, float)):
+            raise TypeError(f"Matrix division by non-scalar {type(other)} is not supported.")
+        if other == 0:
+            raise ZeroDivisionError("Cannot divide by Matrix by zero")
+
+        return self.__mul__(1.0 /other)
         
     @property
     def T(self):
         return Matrix(tuple(zip(*self.mat)))
+    
+    @classmethod
+    def identity(cls, size):
+        if not isinstance(size, int) or size <= 0:
+            raise ValueError("Size must be a Positive integer.")
+        return cls([[1.0 if i == j else 0.0 for j in range(size)] for i in range(size)])
+        
+    def __matmul__(self, other):
+        if isinstance(other, Vector):
+            return self.lin_trans(other)
 
+        other = self._ensure_matrix(other)
+
+        if self.n != other.m:
+            raise ValueError(f"({self.m}x{self.n}) vs ({other.m}x{other.n}) Dimension mismatch")
+
+        other_T = other.T
+        
+        return Matrix([[sum(a*b for a, b in zip(row_A, col_B)) for col_B in other_T] for row_A in self])
+                        
     def lin_trans(self, other):
         other = Vector(other)
         if self.n == other.dim:

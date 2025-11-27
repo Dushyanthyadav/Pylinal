@@ -15,7 +15,7 @@ V3 = v1 + v2
 print(v3)
 
 # Scalar Multiplication
-v3 = v1*v2
+v3 = 2*v2
 print(v3)
 
 # Dot product

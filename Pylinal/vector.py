@@ -1,9 +1,10 @@
+import math
 class Vector:
 
     __slots__ = ('vec', 'dim')
     
     def __init__(self, vector):
-        self.vec = tuple(vector)
+        self.vec = tuple(float(x) for x in vector)
         self.dim = len(vector)
         
     def __repr__(self):
@@ -30,9 +31,15 @@ class Vector:
             return other
         raise ValueError(f"{self.dim} vs {other.dim} Dimension mismatch")
 
+    def __neg__(self):
+        return Vector([-x for x in self])
+
     def __eq__(self, other):
         other = self._ensure_dim(self._ensure_vector(other))        
         return self.vec == other.vec
+
+    def __abs__(self):
+        return math.sqrt(sum(x**2 for x in self))
 
     def __add__(self, other):
         other = self._ensure_dim(self._ensure_vector(other))
@@ -58,10 +65,23 @@ class Vector:
     def __rmul__(self, other):
         return self.__mul__(other)
 
+    def __truediv__(self, other):
+        if isinstance(other, (int, float)):
+            if other == 0:
+                raise ZeroDivisionError("Cannot divide by Zero")
+            return Vector([ i / other for i in self])
+        else:
+            raise TypeError(f"Vector can only be divided by scalar. Given {type(other)}")
+    @property
+    def norm(self):
+        magnitude = abs(self)
+        if magnitude == 0:
+            raise ValueError("Cannot Normalize a Zero Vector.")
+        return self/magnitude
+
     def dot(self, other):
         other = self._ensure_dim(self._ensure_vector(other))
         return sum([a*b for a,b in zip(self.vec, other.vec)])
-
 
     def cross(self, other):
         other = self._ensure_dim(self._ensure_vector(other))
@@ -71,4 +91,3 @@ class Vector:
         b = (self.vec[0]*other.vec[2])-(self.vec[2]*other.vec[0])
         c = (self.vec[0]*other.vec[1])-(self.vec[1]*other.vec[0])
         return Vector([a, -b, c])
-            
