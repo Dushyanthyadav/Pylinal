@@ -33,6 +33,10 @@ class Vector:
 
     def __neg__(self):
         return Vector([-x for x in self])
+        
+    @property
+    def magnitude(self):
+        return self.__abs__()
 
     def __eq__(self, other):
         other = self._ensure_dim(self._ensure_vector(other))        
@@ -72,8 +76,9 @@ class Vector:
             return Vector([ i / other for i in self])
         else:
             raise TypeError(f"Vector can only be divided by scalar. Given {type(other)}")
+            
     @property
-    def norm(self):
+    def unit(self):
         magnitude = abs(self)
         if magnitude == 0:
             raise ValueError("Cannot Normalize a Zero Vector.")
@@ -91,3 +96,22 @@ class Vector:
         b = (self.vec[0]*other.vec[2])-(self.vec[2]*other.vec[0])
         c = (self.vec[0]*other.vec[1])-(self.vec[1]*other.vec[0])
         return Vector([a, -b, c])
+
+    def outer_product(self, other):
+        other = self._ensure_vector(other)
+        from matrix import Matrix
+        return  Matrix([[a*b for b in other] for a in self])
+    
+    def angle(self, other, degrees=False):
+        other = self._ensure_dim(self._ensure_vector(other))
+        dot_prod = self.dot(other)
+        mags = self.magnitude * other.magnitude
+        cos_theta = max(min(dot_prod / mags, 1.0), -1.0)
+
+        radians = math.acos(cos_theta)
+        return math.degrees(radians) if degrees else radians
+
+    def project_onto(self, other):
+        other = self._ensure_vector(other)
+        b_unit = other.unit
+        return b_unit*self.dot(b_unit)
