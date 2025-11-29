@@ -19,7 +19,8 @@ class Vector:
     def __getitem__(self, index):
         return self.vec[index]
 
-    def _ensure_vector(self, other):
+    @staticmethod
+    def _ensure_vector(other):
         if isinstance(other, Vector):
             return other
         if isinstance(other, (list, tuple)):
@@ -39,8 +40,8 @@ class Vector:
         return self.__abs__()
 
     def __eq__(self, other):
-        other = self._ensure_dim(self._ensure_vector(other))        
-        return self.vec == other.vec
+        other = self._ensure_dim(self._ensure_vector(other))
+        return all(math.isclose(a, b, rel_tol=1e-9) for a, b in zip(self.vec, other.vec))
 
     def __abs__(self):
         return math.sqrt(sum(x**2 for x in self))
@@ -99,7 +100,7 @@ class Vector:
 
     def outer_product(self, other):
         other = self._ensure_vector(other)
-        from matrix import Matrix
+        from Pylinal.matrix import Matrix
         return  Matrix([[a*b for b in other] for a in self])
     
     def angle(self, other, degrees=False):

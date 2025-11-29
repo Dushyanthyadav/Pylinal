@@ -138,7 +138,7 @@ class Matrix:
         return cls([[0.0] * cols for _ in range(rows)])
         
     def __matmul__(self, other):
-        from vector import Vector
+        from Pylinal.vector import Vector
 
         if isinstance(other, Vector):
             return self.lin_trans(other)
@@ -153,7 +153,7 @@ class Matrix:
         return Matrix([[sum(a*b for a, b in zip(row_A, col_B)) for col_B in other_T] for row_A in self])
                         
     def lin_trans(self, other):
-        from vector import Vector
+        from Pylinal.vector import Vector
 
         other = Vector(other)
         if self.n == other.dim:

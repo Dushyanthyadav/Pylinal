@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pylinal"
+version = "0.1.0"
+description = "A linear algebra library"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Dushyanth", email = "dushyanthyadav6@gmail.com"}
+]
+keywords = ["linear algebra", "matrix", "vector", "math"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov"  # Optional: for checking test coverage later
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pylinal*"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+pythonpath = [
+    "src"
+]
