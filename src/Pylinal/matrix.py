@@ -1,5 +1,4 @@
-import math
-
+from .vector import Vector
 class Matrix:
 
     __slots__ = ("mat", "m", "n")
@@ -47,13 +46,7 @@ class Matrix:
         return iter(self.mat)
 
     def __getitem__(self, index):
-        if isinstance(index, tuple):
-            r, c = index
-            return self.mat[r][c]        
         return self.mat[index]
-
-    def shape(self):
-        return (self.m, self.n)
     
     def _ensure_matrix(self, other): # Matrix can take in list and tuple
         if isinstance(other, Matrix):
@@ -71,7 +64,7 @@ class Matrix:
         other = self._ensure_dim(self._ensure_matrix(other))
         if (self.m, self.n) != (other.m, other.n):
             return False
-        return all(math.isclose(self[r, c], other[r, c], rel_tol=1e-9) for r in range(self.m) for c in range(self.n))
+        return all([row_a == row_b for row_a, row_b in zip(self, other)])
     
     def __add__(self, other):
         other = self._ensure_dim(self._ensure_matrix(other))
@@ -108,38 +101,14 @@ class Matrix:
     @property
     def T(self):
         return Matrix(tuple(zip(*self.mat)))
-
-    def apply(self, func):
-        return Matrix([[func(x) for x in row] for row in self])
-
-    def determinant(self):
-        if self.m != self.n:
-            raise ValueError("Determinant requires a square matrix")
-
-        if self.m == 2:
-            return self[0,0]*self[1,1] - self[0,1]*self[1,0]
-
-        det = 0
-        for c in range(self.n):
-            det += ((-1) ** c) * self[0, c] * self.minor(0, c).determinant()
-        return det
-
-    def minor(self, i, j):
-        return Matrix([row[:j]+row[j+1:] for k, row in enumerate(self) if k != i])
     
     @classmethod
     def identity(cls, size):
         if not isinstance(size, int) or size <= 0:
             raise ValueError("Size must be a Positive integer.")
         return cls([[1.0 if i == j else 0.0 for j in range(size)] for i in range(size)])
-    
-    @classmethod
-    def zeros(cls, rows, cols):
-        return cls([[0.0] * cols for _ in range(rows)])
         
     def __matmul__(self, other):
-        from Pylinal.vector import Vector
-
         if isinstance(other, Vector):
             return self.lin_trans(other)
 
@@ -153,8 +122,6 @@ class Matrix:
         return Matrix([[sum(a*b for a, b in zip(row_A, col_B)) for col_B in other_T] for row_A in self])
                         
     def lin_trans(self, other):
-        from Pylinal.vector import Vector
-
         other = Vector(other)
         if self.n == other.dim:
             return Vector([sum(a*b for a,b in zip(rows, other)) for rows in self.mat])
