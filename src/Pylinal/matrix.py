@@ -115,7 +115,8 @@ class Matrix:
     def determinant(self):
         if self.m != self.n:
             raise ValueError("Determinant requires a square matrix")
-
+        if self.m == self.n == 1:
+            return self[0, 0]
         if self.m == 2:
             return self[0,0]*self[1,1] - self[0,1]*self[1,0]
 
@@ -125,6 +126,7 @@ class Matrix:
         return det
 
     def minor(self, i, j):
+
         return Matrix([row[:j]+row[j+1:] for k, row in enumerate(self) if k != i])
     
     @classmethod
@@ -160,3 +162,30 @@ class Matrix:
             return Vector([sum(a*b for a,b in zip(rows, other)) for rows in self.mat])
         else:
             raise ValueError(f"({self.m}x{self.n}) vs (1x{other.dim}) Dimension mismatch")
+
+    def adjoint(self):
+        if self.m != self.n:
+            raise ValueError("Adjoint requires a square matrix")
+
+        if self.m == 1:
+            return Matrix([[1.0]])
+
+        cofactors = []
+        for r in range(self.m):
+            cofactors_row = []
+            for c in range(self.n):
+                minor_det = self.minor(r,c).determinant()
+                sign = 1 if (r+c) % 2 == 0 else -1
+                cofactors_row.append(sign*minor_det)
+            cofactors.append(cofactors_row)
+
+        return Matrix(cofactors).T
+
+    def inverse(self):
+        det = self.determinant()
+
+        if math.isclose(det, 0, abs_tol=1e-9):
+            raise ValueError("Matrix is singular (determinant is 0) and cannot be inverted.")
+
+        return self.adjoint() * (1.0/det)
+
